@@ -34,7 +34,7 @@ async function getExtractVariables() {
 const server = new McpServer({
   name: "ultramail",
   version: "1.0.0",
-  instructions: `Ultramail es un microservicio de correo electrónico. Usa las herramientas para listar/crear/editar plantillas, enviar correos, ver logs y gestionar API keys. Las variables en plantillas usan sintaxis {{nombre}}.`,
+  description: `Ultramail es un microservicio de correo electrónico. Usa las herramientas para listar/crear/editar plantillas, enviar correos, ver logs y gestionar API keys. Las variables en plantillas usan sintaxis {{nombre}}.`,
 });
 
 server.tool(
