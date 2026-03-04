@@ -70,16 +70,49 @@ export async function sendGmail(options: {
   return { messageId: res.data.id ?? "" };
 }
 
+// #region agent log
+function _debugLog(payload: { hypothesisId: string; message: string; data: Record<string, unknown> }) {
+  const entry = { sessionId: "560e07", ...payload, timestamp: Date.now() };
+  console.log("[gmail-debug]", JSON.stringify(entry));
+  fetch("http://127.0.0.1:7399/ingest/70174cf6-c312-49ec-a1d0-4a5657b92331", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "560e07" }, body: JSON.stringify(entry) }).catch(() => {});
+}
+// #endregion
+
 export async function verifyConnection(): Promise<{
   connected: boolean;
   error?: string;
 }> {
+  // #region agent log
+  const envCheck = {
+    hasClientId: !!process.env.GMAIL_CLIENT_ID,
+    hasClientSecret: !!process.env.GMAIL_CLIENT_SECRET,
+    hasRefreshToken: !!process.env.GMAIL_REFRESH_TOKEN,
+    hasGmailUser: !!process.env.GMAIL_USER,
+    clientIdLen: (process.env.GMAIL_CLIENT_ID ?? "").length,
+    refreshTokenLen: (process.env.GMAIL_REFRESH_TOKEN ?? "").length,
+    isVercel: !!process.env.VERCEL,
+  };
+  _debugLog({ hypothesisId: "H1,H4", message: "verifyConnection env check", data: envCheck });
+  // #endregion
+
   try {
     const auth = getOAuth2Client();
     const gmail = google.gmail({ version: "v1", auth });
     await gmail.users.getProfile({ userId: "me" });
     return { connected: true };
   } catch (err) {
+    // #region agent log
+    const errData: Record<string, unknown> = {
+      errMessage: err instanceof Error ? err.message : String(err),
+      errName: err instanceof Error ? err.name : undefined,
+    };
+    if (err && typeof err === "object" && "response" in err) {
+      const res = (err as { response?: { data?: unknown; status?: number } }).response;
+      if (res) errData.responseStatus = res.status, errData.responseData = res.data;
+    }
+    if (err && typeof err === "object" && "code" in err) errData.code = (err as { code?: unknown }).code;
+    _debugLog({ hypothesisId: "H2,H3,H5", message: "verifyConnection error", data: errData });
+    // #endregion
     const message = err instanceof Error ? err.message : String(err);
     return { connected: false, error: message };
   }
