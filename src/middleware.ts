@@ -5,7 +5,7 @@ interface SessionData {
   isLoggedIn: boolean;
 }
 
-const panelRoutes = ["/templates", "/logs", "/settings"];
+const panelRoutes = ["/templates", "/logs", "/settings", "/aia"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -37,5 +37,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/templates/:path*", "/logs/:path*", "/settings/:path*"],
+  matcher: ["/templates/:path*", "/logs/:path*", "/settings/:path*", "/aia/:path*"],
 };

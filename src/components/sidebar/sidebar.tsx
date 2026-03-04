@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/templates", label: "Plantillas" },
   { href: "/logs", label: "Historial" },
   { href: "/settings", label: "Configuración" },
+  { href: "/aia", label: "AIA" },
 ];
 
 export function Sidebar() {

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getTransporter } from "./gmail-transport";
+import { sendGmail } from "./gmail-transport";
 import { renderTemplate } from "./template-engine";
 
 interface SendEmailParams {
@@ -32,13 +32,7 @@ export async function sendEmail(
   const subject = renderTemplate(template.subject, variables);
 
   try {
-    const transporter = getTransporter();
-    const info = await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to,
-      subject,
-      html,
-    });
+    const result = await sendGmail({ to, subject, html });
 
     const log = await prisma.emailLog.create({
       data: {
@@ -52,7 +46,7 @@ export async function sendEmail(
 
     return {
       success: true,
-      messageId: info.messageId,
+      messageId: result.messageId,
       logId: log.id,
     };
   } catch (err) {

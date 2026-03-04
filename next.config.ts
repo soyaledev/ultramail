@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
-  serverExternalPackages: ["nodemailer", "googleapis"],
+  serverExternalPackages: ["googleapis"],
 };
 
 export default nextConfig;

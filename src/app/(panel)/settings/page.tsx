@@ -42,6 +42,7 @@ export default function SettingsPage() {
   const [gmailStatus, setGmailStatus] = useState<
     "checking" | "ok" | "error"
   >("checking");
+  const [gmailError, setGmailError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchKeys();
@@ -61,10 +62,12 @@ export default function SettingsPage() {
   }
 
   async function checkGmail() {
+    setGmailError(null);
     try {
       const res = await fetch("/api/gmail-status");
       const data = await res.json();
       setGmailStatus(data.connected ? "ok" : "error");
+      if (data.error) setGmailError(data.error);
     } catch {
       setGmailStatus("error");
     }
@@ -151,7 +154,7 @@ export default function SettingsPage() {
             </Badge>
             <span className={styles.gmailHint}>
               {gmailStatus === "error" &&
-                "Verifica las variables de entorno GMAIL_* en tu configuración."}
+                (gmailError || "Verifica las variables de entorno GMAIL_* en tu configuración.")}
             </span>
           </div>
         </CardContent>
