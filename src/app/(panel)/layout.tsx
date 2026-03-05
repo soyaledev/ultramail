@@ -1,15 +1,9 @@
-import { Sidebar } from "@/components/sidebar/sidebar";
-import styles from "./panel.module.css";
+import { PanelShell } from "@/components/panel-shell/panel-shell";
 
 export default function PanelLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className={styles.layout}>
-      <Sidebar />
-      <main className={styles.main}>{children}</main>
-    </div>
-  );
+  return <PanelShell>{children}</PanelShell>;
 }

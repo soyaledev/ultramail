@@ -1,0 +1,81 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.header button {
+  align-self: flex-start;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.subtitle {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.chart {
+  min-height: 300px;
+}
+
+.grid {
+  stroke: var(--border);
+}
+
+.mono {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.empty {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alertItem {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.alertMeta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.375rem;
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { MobileGate } from "@/components/mobile-gate/mobile-gate";
 import "./globals.css";
 
 const ibmSans = IBM_Plex_Sans({
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body className={`${ibmSans.variable} ${ibmMono.variable}`}>
-        {children}
+        <MobileGate>{children}</MobileGate>
         <Toaster theme="dark" />
       </body>
     </html>

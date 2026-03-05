@@ -323,10 +323,11 @@ export default function SettingsPage() {
     <div className={styles.page}>
       <h1 className={styles.title}>Configuración</h1>
 
-      <Card>
-        <CardHeader>
-          <div className={styles.keysHeader}>
-            <CardTitle>Remitentes</CardTitle>
+      <div className={styles.settingsGrid}>
+        <Card>
+          <CardHeader>
+            <div className={styles.keysHeader}>
+              <CardTitle>Remitentes</CardTitle>
             <Button onClick={openCreateSender}>Nuevo remitente</Button>
           </div>
         </CardHeader>
@@ -419,7 +420,80 @@ export default function SettingsPage() {
             </Table>
           )}
         </CardContent>
-      </Card>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className={styles.keysHeader}>
+              <CardTitle>API Keys</CardTitle>
+              <Button onClick={() => setNewKeyDialog(true)}>Nueva API Key</Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div>Cargando...</div>
+          ) : keys.length === 0 ? (
+            <p className={styles.empty}>
+              No hay API keys. Crea una para conectar tus sistemas.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Key</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Último uso</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {keys.map((k) => (
+                  <TableRow key={k.id}>
+                    <TableCell className={styles.nameCell}>{k.name}</TableCell>
+                    <TableCell>
+                      <code className={styles.keyCode}>{k.key}</code>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={k.active ? "default" : "secondary"}
+                      >
+                        {k.active ? "Activa" : "Inactiva"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {k.lastUsedAt
+                        ? new Date(k.lastUsedAt).toLocaleString()
+                        : "Nunca"}
+                    </TableCell>
+                    <TableCell>
+                      <div className={styles.keyActions}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleToggleKey(k.id, !k.active)
+                          }
+                        >
+                          {k.active ? "Desactivar" : "Activar"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteKey(k.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+        </Card>
+      </div>
 
       <Dialog open={senderDialogOpen} onOpenChange={setSenderDialogOpen}>
         <DialogContent>
@@ -527,78 +601,6 @@ export default function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Card>
-        <CardHeader>
-          <div className={styles.keysHeader}>
-            <CardTitle>API Keys</CardTitle>
-            <Button onClick={() => setNewKeyDialog(true)}>Nueva API Key</Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div>Cargando...</div>
-          ) : keys.length === 0 ? (
-            <p className={styles.empty}>
-              No hay API keys. Crea una para conectar tus sistemas.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Último uso</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {keys.map((k) => (
-                  <TableRow key={k.id}>
-                    <TableCell className={styles.nameCell}>{k.name}</TableCell>
-                    <TableCell>
-                      <code className={styles.keyCode}>{k.key}</code>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={k.active ? "default" : "secondary"}
-                      >
-                        {k.active ? "Activa" : "Inactiva"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {k.lastUsedAt
-                        ? new Date(k.lastUsedAt).toLocaleString()
-                        : "Nunca"}
-                    </TableCell>
-                    <TableCell>
-                      <div className={styles.keyActions}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleToggleKey(k.id, !k.active)
-                          }
-                        >
-                          {k.active ? "Desactivar" : "Activar"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteKey(k.id)}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
 
       <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
         <DialogContent>

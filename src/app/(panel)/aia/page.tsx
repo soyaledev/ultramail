@@ -121,12 +121,16 @@ Base URL: \`NEXT_PUBLIC_APP_URL\` (ej: https://ultramail.vercel.app o http://loc
 {
   "template_id": "string (ID de plantilla)",
   "to": "email@ejemplo.com",
-  "variables": { "nombre": "valor", "otra": "valor" },
-  "sender_id": "string (ID de remitente, opcional; si se omite se usa el predeterminado)"
+  "variables": { "nombre": "valor" },
+  "sender_id": "string (opcional)",
+  "attachments": [
+    { "filename": "factura.pdf", "content": "base64...", "contentType": "application/pdf" },
+    { "filename": "doc.pdf", "content": "https://ejemplo.com/doc.pdf" }
+  ]
 }
 \`\`\`
 
-**Requerido:** template_id, to. variables y sender_id son opcionales.
+**Requerido:** template_id, to. variables, sender_id y attachments son opcionales. **Adjuntos:** content puede ser string base64 o URL (https://). Máximo 10MB total.
 
 **Respuesta 200:**
 \`\`\`json
@@ -345,7 +349,7 @@ El MCP carga .env desde el cwd (DATABASE_URL, DIRECT_URL, ENCRYPTION_KEY). No re
 - La API Key debe mantenerse secreta. Solo se muestra completa al crearla.
 - PANEL_PASSWORD y SESSION_SECRET deben ser fuertes en producción.
 - Las variables de entorno sensibles no deben commitearse (.env en .gitignore).
-- El middleware protege /templates, /logs, /settings, /aia; /api/send usa API Key.
+- El middleware protege /templates, /logs, /settings; /aia es público (para que la IA pueda leer la documentación); /api/send usa API Key.
 
 ---
 

@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     to?: string;
     variables?: Record<string, string>;
     sender_id?: string;
+    attachments?: Array<{ filename: string; content: string; contentType?: string }>;
   };
   try {
     body = await request.json();
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { template_id, to, variables, sender_id } = body;
+  const { template_id, to, variables, sender_id, attachments } = body;
 
   if (!template_id || !to) {
     await logApiAudit({
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
     to,
     variables: variables ?? {},
     senderId: sender_id,
+    attachments: attachments ?? [],
   });
 
   if (!result.success) {

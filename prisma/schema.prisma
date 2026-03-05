@@ -46,6 +46,8 @@ model Sender {
   smtpUser              String
   smtpPasswordEncrypted String     @db.Text
   isDefault             Boolean    @default(false)
+  lastVerifyFailedAt    DateTime?
+  verifyFailureCount    Int        @default(0)
   createdAt             DateTime   @default(now())
   updatedAt             DateTime   @updatedAt
   logs                  EmailLog[]
