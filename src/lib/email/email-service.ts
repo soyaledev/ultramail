@@ -25,7 +25,10 @@ export async function sendEmail(
   });
 
   if (!template) {
-    return { success: false, error: "Template not found" };
+    return {
+      success: false,
+      error: `Template not found: "${templateId}". Usa el ID de la plantilla (ej: clxxx...), no el nombre.`,
+    };
   }
 
   const html = renderTemplate(template.html, variables);

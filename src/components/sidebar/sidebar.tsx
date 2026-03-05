@@ -7,6 +7,7 @@ import styles from "./sidebar.module.css";
 const NAV_ITEMS = [
   { href: "/templates", label: "Plantillas" },
   { href: "/logs", label: "Historial" },
+  { href: "/actividad", label: "Actividad API" },
   { href: "/settings", label: "Configuración" },
   { href: "/aia", label: "AIA" },
 ];

@@ -43,3 +43,20 @@ model ApiKey {
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
 }
+
+model ApiAuditLog {
+  id           String   @id @default(cuid())
+  path         String
+  method       String
+  statusCode   Int
+  errorMessage String?
+  apiKeyId     String?
+  apiKeyName   String?
+  templateId   String?
+  to           String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([statusCode])
+  @@index([apiKeyId])
+}

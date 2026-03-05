@@ -232,10 +232,28 @@ Envía correo de prueba (requiere sesión).
 | /templates/new | Crear plantilla |
 | /templates/[id] | Editar plantilla (editor HTML + preview) |
 | /logs | Historial de envíos |
+| /actividad | Actividad API (llamadas externas, éxitos y fallos) |
 | /settings | API Keys y estado Gmail |
 | /aia | Esta documentación |
 
 Protegidas por middleware: requieren sesión (cookie ultramail-session).
+
+---
+
+## 8.1 Actividad API y troubleshooting
+
+**Ruta /actividad:** Muestra todas las llamadas a POST /api/send desde sistemas externos, incluidas las fallidas (401, 400, 500). Útil para diagnosticar por qué un sistema integrado no envía correos.
+
+**Errores comunes:**
+| Código | Causa | Solución |
+|--------|-------|----------|
+| 401 Missing X-API-Key | No se envió el header | Añadir header \`X-API-Key: um_xxx...\` |
+| 401 Invalid API key | Key incorrecta o desactivada | Verificar key en Settings |
+| 400 template_id and to required | Body incompleto | Enviar \`{ "template_id": "...", "to": "email@..." }\` |
+| 500 Template not found | template_id no existe | Usar el **ID** de la plantilla (clxxx...), no el nombre. El ID está en la URL al editar una plantilla. |
+| 500 invalid_grant / Gmail error | Gmail desconectado | Regenerar refresh token en OAuth Playground y actualizar en Vercel |
+
+**Importante:** \`template_id\` debe ser el ID (cuid) de la plantilla, ej: \`clxyz123abc...\`. No usar el nombre.
 
 ---
 

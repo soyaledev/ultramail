@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 export async function validateApiKey(
   request: NextRequest
-): Promise<{ valid: boolean; keyId?: string; error?: string }> {
+): Promise<{ valid: boolean; keyId?: string; keyName?: string; error?: string }> {
   const apiKey = request.headers.get("x-api-key");
 
   if (!apiKey) {
@@ -27,5 +27,5 @@ export async function validateApiKey(
     data: { lastUsedAt: new Date() },
   });
 
-  return { valid: true, keyId: key.id };
+  return { valid: true, keyId: key.id, keyName: key.name };
 }
