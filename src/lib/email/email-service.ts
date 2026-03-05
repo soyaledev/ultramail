@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db";
-import { sendGmail } from "./gmail-transport";
+import { sendSmtp } from "./smtp-transport";
 import { renderTemplate } from "./template-engine";
 
 interface SendEmailParams {
   templateId: string;
   to: string;
   variables: Record<string, string>;
+  senderId?: string;
 }
 
 interface SendEmailResult {
@@ -15,10 +16,31 @@ interface SendEmailResult {
   error?: string;
 }
 
+async function resolveSenderId(senderId?: string): Promise<string> {
+  if (senderId) {
+    const sender = await prisma.sender.findUnique({
+      where: { id: senderId },
+    });
+    if (!sender) {
+      throw new Error(`Sender not found: ${senderId}`);
+    }
+    return senderId;
+  }
+  const defaultSender = await prisma.sender.findFirst({
+    where: { isDefault: true },
+  });
+  if (!defaultSender) {
+    throw new Error(
+      "No default sender configured. Create a sender in Settings and mark it as default."
+    );
+  }
+  return defaultSender.id;
+}
+
 export async function sendEmail(
   params: SendEmailParams
 ): Promise<SendEmailResult> {
-  const { templateId, to, variables } = params;
+  const { templateId, to, variables, senderId } = params;
 
   const template = await prisma.template.findUnique({
     where: { id: templateId },
@@ -31,15 +53,24 @@ export async function sendEmail(
     };
   }
 
+  let resolvedSenderId: string;
+  try {
+    resolvedSenderId = await resolveSenderId(senderId);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg };
+  }
+
   const html = renderTemplate(template.html, variables);
   const subject = renderTemplate(template.subject, variables);
 
   try {
-    const result = await sendGmail({ to, subject, html });
+    const result = await sendSmtp(resolvedSenderId, { to, subject, html });
 
     const log = await prisma.emailLog.create({
       data: {
         templateId,
+        senderId: resolvedSenderId,
         to,
         subject,
         variables,
@@ -59,6 +90,7 @@ export async function sendEmail(
     const log = await prisma.emailLog.create({
       data: {
         templateId,
+        senderId: resolvedSenderId,
         to,
         subject,
         variables,
@@ -78,11 +110,13 @@ export async function sendEmail(
 export async function sendTestEmail(
   templateId: string,
   testEmail: string,
-  testVariables: Record<string, string>
+  testVariables: Record<string, string>,
+  senderId?: string
 ): Promise<SendEmailResult> {
   return sendEmail({
     templateId,
     to: testEmail,
     variables: testVariables,
+    senderId,
   });
 }

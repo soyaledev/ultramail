@@ -12,15 +12,35 @@
   font-family: var(--font-geist-mono), monospace;
 }
 
-.gmailStatus {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
 .gmailHint {
   font-size: 0.75rem;
   color: var(--muted-foreground);
+}
+
+.senderForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.senderForm > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.checkboxLabel input {
+  width: 1rem;
+  height: 1rem;
 }
 
 .keysHeader {

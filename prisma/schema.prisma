@@ -23,6 +23,8 @@ model EmailLog {
   id         String   @id @default(cuid())
   templateId String
   template   Template @relation(fields: [templateId], references: [id])
+  senderId   String?
+  sender     Sender?  @relation(fields: [senderId], references: [id])
   to         String
   subject    String
   variables  Json
@@ -33,6 +35,22 @@ model EmailLog {
   @@index([templateId])
   @@index([status])
   @@index([sentAt])
+}
+
+model Sender {
+  id                    String     @id @default(cuid())
+  name                  String
+  fromEmail             String
+  smtpHost              String     @default("smtp.gmail.com")
+  smtpPort              Int        @default(587)
+  smtpUser              String
+  smtpPasswordEncrypted String     @db.Text
+  isDefault             Boolean    @default(false)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  logs                  EmailLog[]
+
+  @@index([isDefault])
 }
 
 model ApiKey {

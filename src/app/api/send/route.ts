@@ -31,7 +31,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { template_id?: string; to?: string; variables?: Record<string, string> };
+  let body: {
+    template_id?: string;
+    to?: string;
+    variables?: Record<string, string>;
+    sender_id?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -51,7 +56,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { template_id, to, variables } = body;
+  const { template_id, to, variables, sender_id } = body;
 
   if (!template_id || !to) {
     await logApiAudit({
@@ -74,6 +79,7 @@ export async function POST(request: NextRequest) {
     templateId: template_id,
     to,
     variables: variables ?? {},
+    senderId: sender_id,
   });
 
   if (!result.success) {

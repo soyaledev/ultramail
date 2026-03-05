@@ -13,7 +13,7 @@ Este documento contiene toda la información que un agente de IA necesita para e
 
 Ultramail es un microservicio de correo electrónico privado que:
 - Envía correos automáticamente mediante plantillas HTML
-- Se conecta con Gmail vía OAuth2 (Gmail API)
+- Envía correos vía SMTP (soporta múltiples remitentes, ej. Gmail con App Password)
 - Ofrece un panel web de administración
 - Expone una API REST para integración con otros sistemas
 - Utiliza Prisma + PostgreSQL (Neon) como base de datos
@@ -27,7 +27,7 @@ El sistema está diseñado para integración: otros sistemas lo invocan cuando n
 ### Stack técnico
 - Next.js 16 (App Router)
 - Prisma 6 + PostgreSQL (Neon)
-- Gmail API (googleapis) para envío de correos
+- Nodemailer + SMTP (soporta Gmail y otros proveedores)
 - iron-session para autenticación del panel
 - API Key para autenticación de sistemas externos
 
@@ -41,7 +41,7 @@ src/
   lib/
     db.ts          # Cliente Prisma
     auth/          # Session, API key
-    email/         # Gmail transport, template engine, email service
+    email/         # SMTP transport, template engine, email service
   components/
   middleware.ts    # Protege rutas del panel
 prisma/
@@ -72,7 +72,21 @@ prisma/
 | variables | Json | Variables usadas |
 | status | String | "sent" o "failed" |
 | error | String? | Mensaje de error si falló |
+| senderId | String? | FK a Sender (remitente usado) |
 | sentAt | DateTime | Fecha de envío |
+
+### Sender (remitentes SMTP)
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | String (cuid) | Identificador único |
+| name | String | Nombre descriptivo |
+| fromEmail | String | Dirección From del correo |
+| smtpHost | String | Host SMTP (default smtp.gmail.com) |
+| smtpPort | Int | Puerto (default 587) |
+| smtpUser | String | Usuario SMTP |
+| smtpPasswordEncrypted | String | Contraseña encriptada |
+| isDefault | Boolean | Solo uno puede ser predeterminado |
+| createdAt, updatedAt | DateTime | Metadatos |
 
 ### ApiKey
 | Campo | Tipo | Descripción |
@@ -107,11 +121,12 @@ Base URL: \`NEXT_PUBLIC_APP_URL\` (ej: https://ultramail.vercel.app o http://loc
 {
   "template_id": "string (ID de plantilla)",
   "to": "email@ejemplo.com",
-  "variables": { "nombre": "valor", "otra": "valor" }
+  "variables": { "nombre": "valor", "otra": "valor" },
+  "sender_id": "string (ID de remitente, opcional; si se omite se usa el predeterminado)"
 }
 \`\`\`
 
-**Requerido:** template_id, to. variables es opcional (objeto vacío si no hay).
+**Requerido:** template_id, to. variables y sender_id son opcionales.
 
 **Respuesta 200:**
 \`\`\`json
@@ -185,13 +200,28 @@ Login del panel.
 #### DELETE /api/auth/login
 Logout. Destruye sesión.
 
-#### GET /api/gmail-status
-Verifica conexión con Gmail.
-**Respuesta:** { "connected": boolean, "error"?: string }
+#### GET /api/senders
+Lista remitentes SMTP (sin contraseñas).
+
+#### POST /api/senders
+Crea remitente.
+**Body:** { "name", "fromEmail", "smtpHost"?, "smtpPort"?, "smtpUser", "smtpPassword", "isDefault"? }
+
+#### PATCH /api/senders/[id]
+Actualiza remitente (incl. marcar isDefault).
+
+#### DELETE /api/senders/[id]
+Elimina remitente.
+
+#### GET /api/senders/[id]/verify
+Verifica conexión SMTP del remitente.
+
+#### GET /api/senders/status
+Estado de conexión de todos los remitentes.
 
 #### POST /api/test-send
 Envía correo de prueba (requiere sesión).
-**Body:** { "template_id": string, "to": string, "variables"?: object }
+**Body:** { "template_id": string, "to": string, "variables"?: object, "sender_id"?: string }
 **Respuesta:** Igual que /api/send.
 
 ---
@@ -202,13 +232,12 @@ Envía correo de prueba (requiere sesión).
 |----------|-----|
 | DATABASE_URL | URL pooled de Neon |
 | DIRECT_URL | URL unpooled de Neon (migraciones) |
-| GMAIL_CLIENT_ID | OAuth2 Google |
-| GMAIL_CLIENT_SECRET | OAuth2 Google |
-| GMAIL_REFRESH_TOKEN | Token de refresco Gmail |
-| GMAIL_USER | Email de la cuenta Gmail |
+| ENCRYPTION_KEY | Clave para encriptar contraseñas SMTP (32+ caracteres). Opcional: si SESSION_SECRET tiene 32+ chars se usa como respaldo. |
 | PANEL_PASSWORD | Contraseña del panel |
 | SESSION_SECRET | Clave para iron-session (32+ caracteres) |
 | NEXT_PUBLIC_APP_URL | URL base de la app (para CORS y links) |
+
+**Remitentes SMTP:** Se configuran en el panel (Settings > Remitentes). Para Gmail: crear contraseña de aplicación en Google Account → Seguridad → Contraseñas de aplicaciones. Host: smtp.gmail.com, Puerto: 587.
 
 ---
 
@@ -217,7 +246,7 @@ Envía correo de prueba (requiere sesión).
 1. Sistema externo hace POST /api/send con X-API-Key, template_id, to, variables.
 2. validateApiKey verifica la key en la BD y actualiza lastUsedAt.
 3. email-service obtiene la plantilla, renderTemplate reemplaza variables en HTML y subject.
-4. gmail-transport usa Gmail API (sendGmail) para enviar el correo.
+4. smtp-transport usa Nodemailer y el remitente seleccionado (o predeterminado) para enviar el correo.
 5. Se crea un EmailLog con status "sent" o "failed".
 6. Se devuelve success, messageId, logId.
 
@@ -233,7 +262,7 @@ Envía correo de prueba (requiere sesión).
 | /templates/[id] | Editar plantilla (editor HTML + preview) |
 | /logs | Historial de envíos |
 | /actividad | Actividad API (llamadas externas, éxitos y fallos) |
-| /settings | API Keys y estado Gmail |
+| /settings | API Keys y gestión de remitentes SMTP |
 | /aia | Esta documentación |
 
 Protegidas por middleware: requieren sesión (cookie ultramail-session).
@@ -251,7 +280,7 @@ Protegidas por middleware: requieren sesión (cookie ultramail-session).
 | 401 Invalid API key | Key incorrecta o desactivada | Verificar key en Settings |
 | 400 template_id and to required | Body incompleto | Enviar \`{ "template_id": "...", "to": "email@..." }\` |
 | 500 Template not found | template_id no existe | Usar el **ID** de la plantilla (clxxx...), no el nombre. El ID está en la URL al editar una plantilla. |
-| 500 invalid_grant / Gmail error | Gmail desconectado | Regenerar refresh token en OAuth Playground y actualizar en Vercel |
+| 500 No default sender / SMTP error | Sin remitente predeterminado o credenciales incorrectas | Crear remitente en Settings > Remitentes. Para Gmail, usar contraseña de aplicación |
 
 **Importante:** \`template_id\` debe ser el ID (cuid) de la plantilla, ej: \`clxyz123abc...\`. No usar el nombre.
 
@@ -278,7 +307,7 @@ Ultramail incluye un servidor MCP que permite a un agente controlar el sistema s
 }
 \`\`\`
 
-El MCP carga .env desde el cwd, por lo que DATABASE_URL, DIRECT_URL y las variables de Gmail deben estar configuradas. No requiere API key: usa Prisma y los servicios internos directamente.
+El MCP carga .env desde el cwd (DATABASE_URL, DIRECT_URL, ENCRYPTION_KEY). No requiere API key: usa Prisma y los servicios internos directamente.
 
 **Herramientas MCP disponibles:**
 | Herramienta | Descripción | Parámetros |
@@ -288,11 +317,12 @@ El MCP carga .env desde el cwd, por lo que DATABASE_URL, DIRECT_URL y las variab
 | ultramail_create_template | Crea plantilla | name, subject, html |
 | ultramail_update_template | Actualiza plantilla | template_id, name?, subject?, html? |
 | ultramail_delete_template | Elimina plantilla | template_id |
-| ultramail_send_email | Envía correo | template_id, to, variables? |
+| ultramail_send_email | Envía correo | template_id, to, variables?, sender_id? |
 | ultramail_list_logs | Lista historial | template_id?, status?, limit?, page? |
 | ultramail_list_api_keys | Lista API keys | (ninguno) |
 | ultramail_create_api_key | Crea API key | name |
-| ultramail_gmail_status | Estado conexión Gmail | (ninguno) |
+| ultramail_list_senders | Lista remitentes SMTP | (ninguno) |
+| ultramail_senders_status | Estado conexión de cada remitente | (ninguno) |
 
 ---
 
@@ -305,7 +335,7 @@ El MCP carga .env desde el cwd, por lo que DATABASE_URL, DIRECT_URL y las variab
 | Modificar plantilla | PUT /api/templates/[id] o MCP ultramail_update_template |
 | Ver historial de envíos | GET /api/logs o MCP ultramail_list_logs |
 | Crear API key para integración | POST /api/keys (con sesión) o MCP ultramail_create_api_key |
-| Verificar conexión Gmail | GET /api/gmail-status o MCP ultramail_gmail_status |
+| Verificar remitentes / estado SMTP | GET /api/senders/status o MCP ultramail_senders_status |
 | Enviar correo de prueba | POST /api/test-send (con sesión) |
 
 ---

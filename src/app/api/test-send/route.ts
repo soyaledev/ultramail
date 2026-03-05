@@ -6,6 +6,7 @@ export async function POST(request: NextRequest) {
     template_id?: string;
     to?: string;
     variables?: Record<string, string>;
+    sender_id?: string;
   };
   try {
     body = await request.json();
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { template_id, to, variables } = body;
+  const { template_id, to, variables, sender_id } = body;
 
   if (!template_id || !to) {
     return NextResponse.json(
@@ -22,7 +23,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await sendTestEmail(template_id, to, variables ?? {});
+  const result = await sendTestEmail(
+    template_id,
+    to,
+    variables ?? {},
+    sender_id
+  );
 
   if (!result.success) {
     return NextResponse.json(result, { status: 500 });

@@ -21,10 +21,6 @@ async function getSendEmail() {
   return mod.sendEmail;
 }
 
-async function getVerifyConnection() {
-  const mod = await import("../src/lib/email/gmail-transport");
-  return mod.verifyConnection;
-}
 
 async function getExtractVariables() {
   const mod = await import("../src/lib/email/template-engine");
@@ -156,13 +152,15 @@ server.tool(
     template_id: z.string().describe("ID de la plantilla"),
     to: z.string().describe("Email del destinatario"),
     variables: z.record(z.string()).optional().describe("Variables para la plantilla, ej. { nombre: 'Juan' }"),
+    sender_id: z.string().optional().describe("ID del remitente SMTP (si se omite, se usa el predeterminado)"),
   },
-  async ({ template_id, to, variables }) => {
+  async ({ template_id, to, variables, sender_id }) => {
     const sendEmail = await getSendEmail();
     const result = await sendEmail({
       templateId: template_id,
       to,
       variables: variables ?? {},
+      senderId: sender_id,
     });
     if (!result.success) {
       return {
@@ -242,14 +240,45 @@ server.tool(
 );
 
 server.tool(
-  "ultramail_gmail_status",
-  "Verifica el estado de conexión con Gmail",
+  "ultramail_list_senders",
+  "Lista los remitentes SMTP configurados",
   {},
   async () => {
-    const verifyConnection = await getVerifyConnection();
-    const result = await verifyConnection();
+    const senders = await prisma.sender.findMany({
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      select: { id: true, name: true, fromEmail: true, isDefault: true },
+    });
     return {
-      content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+      content: [{ type: "text" as const, text: JSON.stringify(senders, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "ultramail_senders_status",
+  "Verifica el estado de conexión SMTP de cada remitente",
+  {},
+  async () => {
+    const { verifySender } = await import("../src/lib/email/smtp-transport");
+    const senders = await prisma.sender.findMany({
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      select: { id: true, name: true, fromEmail: true, isDefault: true },
+    });
+    const statuses = await Promise.all(
+      senders.map(async (s) => {
+        const result = await verifySender(s.id);
+        return {
+          id: s.id,
+          name: s.name,
+          fromEmail: s.fromEmail,
+          isDefault: s.isDefault,
+          connected: result.connected,
+          error: result.error,
+        };
+      })
+    );
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(statuses, null, 2) }],
     };
   }
 );

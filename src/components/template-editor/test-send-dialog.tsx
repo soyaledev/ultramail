@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
+
+interface SenderOption {
+  id: string;
+  name: string;
+  fromEmail: string;
+  isDefault: boolean;
+}
 
 interface TestSendDialogProps {
   open: boolean;
@@ -29,6 +43,21 @@ export function TestSendDialog({
   const [email, setEmail] = useState("");
   const [vars, setVars] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
+  const [senders, setSenders] = useState<SenderOption[]>([]);
+  const [selectedSenderId, setSelectedSenderId] = useState<string>("");
+
+  useEffect(() => {
+    if (open) {
+      fetch("/api/senders")
+        .then((r) => r.json())
+        .then((data: SenderOption[]) => {
+          setSenders(data);
+          const defaultSender = data.find((s) => s.isDefault) ?? data[0];
+          setSelectedSenderId(defaultSender?.id ?? "");
+        })
+        .catch(() => setSenders([]));
+    }
+  }, [open]);
 
   function handleVarChange(key: string, value: string) {
     setVars((prev) => ({ ...prev, [key]: value }));
@@ -42,14 +71,19 @@ export function TestSendDialog({
 
     setSending(true);
     try {
+      const body: Record<string, unknown> = {
+        template_id: templateId,
+        to: email,
+        variables: vars,
+      };
+      if (senders.length > 1 && selectedSenderId) {
+        body.sender_id = selectedSenderId;
+      }
+
       const res = await fetch("/api/test-send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          template_id: templateId,
-          to: email,
-          variables: vars,
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -76,6 +110,27 @@ export function TestSendDialog({
         </DialogHeader>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {senders.length > 1 && (
+            <div>
+              <Label>Remitente</Label>
+              <Select
+                value={selectedSenderId}
+                onValueChange={setSelectedSenderId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar remitente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {senders.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} ({s.fromEmail})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div>
             <Label htmlFor="test-email">Email de destino</Label>
             <Input
