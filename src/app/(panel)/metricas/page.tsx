@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Loader } from "@/components/loader/loader";
 import styles from "./metricas.module.css";
 
 interface DayMetric {
@@ -65,7 +66,7 @@ export default function MetricasPage() {
     return (
       <div className={styles.page}>
         <h1 className={styles.title}>Métricas</h1>
-        <div>Cargando...</div>
+        <Loader size="md" />
       </div>
     );
   }
@@ -137,7 +138,11 @@ export default function MetricasPage() {
                   tick={{ fontSize: 11 }}
                   tickFormatter={(v) => v.slice(5)}
                 />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 11 }}
+                  domain={[0, "auto"]}
+                />
                 <Tooltip
                   contentStyle={{
                     background: "var(--card)",

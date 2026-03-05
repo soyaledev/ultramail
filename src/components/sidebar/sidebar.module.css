@@ -1,6 +1,36 @@
 .logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo.collapsed {
+  justify-content: center;
+  padding: 1rem 0.5rem;
+}
+
+.toggleBtn {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggleBtn:hover {
+  background: var(--accent);
+  color: var(--foreground);
 }
 
 .logoText {
@@ -22,6 +52,8 @@
   gap: 0;
   padding: 0.5rem 0;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .navItem {
@@ -76,12 +108,13 @@
 .active {
   background: var(--accent);
   color: var(--foreground);
-  border-left-color: var(--foreground);
+  border-left-color: var(--chart-1);
 }
 
 .footer {
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .logout {

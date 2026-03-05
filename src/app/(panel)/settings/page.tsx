@@ -21,7 +21,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Loader } from "@/components/loader/loader";
 import styles from "./settings.module.css";
 
 interface ApiKeyEntry {
@@ -323,177 +325,186 @@ export default function SettingsPage() {
     <div className={styles.page}>
       <h1 className={styles.title}>Configuración</h1>
 
-      <div className={styles.settingsGrid}>
-        <Card>
-          <CardHeader>
-            <div className={styles.keysHeader}>
-              <CardTitle>Remitentes</CardTitle>
-            <Button onClick={openCreateSender}>Nuevo remitente</Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {sendersLoading ? (
-            <div>Cargando...</div>
-          ) : senders.length === 0 ? (
-            <p className={styles.empty}>
-              No hay remitentes. Crea uno para enviar correos (ej. con Gmail SMTP).
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Predeterminado</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {senders.map((s) => {
-                  const status = senderStatuses.find((st) => st.id === s.id);
-                  const isVerifying = verifyingIds.has(s.id);
-                  return (
-                    <TableRow key={s.id}>
-                      <TableCell className={styles.nameCell}>{s.name}</TableCell>
-                      <TableCell>{s.fromEmail}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            status?.connected
-                              ? "default"
-                              : isVerifying
-                              ? "secondary"
-                              : "destructive"
-                          }
-                        >
-                          {isVerifying
-                            ? "Verificando..."
-                            : status?.connected
-                            ? "Verificado"
-                            : status?.error ?? "Error"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {s.isDefault ? (
-                          <Badge variant="secondary">Sí</Badge>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSetDefaultSender(s.id)}
-                          >
-                            Marcar predeterminado
-                          </Button>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className={styles.keyActions}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => verifySender(s.id)}
-                            disabled={isVerifying}
-                          >
-                            Verificar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditSender(s)}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteSender(s.id)}
-                          >
-                            Eliminar
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-        </Card>
+      <Tabs defaultValue="senders" className={styles.tabs}>
+        <TabsList>
+          <TabsTrigger value="senders">Remitentes</TabsTrigger>
+          <TabsTrigger value="keys">API Keys</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <div className={styles.keysHeader}>
-              <CardTitle>API Keys</CardTitle>
-              <Button onClick={() => setNewKeyDialog(true)}>Nueva API Key</Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div>Cargando...</div>
-          ) : keys.length === 0 ? (
-            <p className={styles.empty}>
-              No hay API keys. Crea una para conectar tus sistemas.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Último uso</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {keys.map((k) => (
-                  <TableRow key={k.id}>
-                    <TableCell className={styles.nameCell}>{k.name}</TableCell>
-                    <TableCell>
-                      <code className={styles.keyCode}>{k.key}</code>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={k.active ? "default" : "secondary"}
-                      >
-                        {k.active ? "Activa" : "Inactiva"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {k.lastUsedAt
-                        ? new Date(k.lastUsedAt).toLocaleString()
-                        : "Nunca"}
-                    </TableCell>
-                    <TableCell>
-                      <div className={styles.keyActions}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleToggleKey(k.id, !k.active)
-                          }
-                        >
-                          {k.active ? "Desactivar" : "Activar"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteKey(k.id)}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="senders">
+          <Card>
+            <CardHeader>
+              <div className={styles.keysHeader}>
+                <CardTitle>Remitentes</CardTitle>
+                <Button onClick={openCreateSender}>Nuevo remitente</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {sendersLoading ? (
+                <Loader size="sm" />
+              ) : senders.length === 0 ? (
+                <p className={styles.empty}>
+                  No hay remitentes. Crea uno para enviar correos (ej. con Gmail SMTP).
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Predeterminado</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {senders.map((s) => {
+                      const status = senderStatuses.find((st) => st.id === s.id);
+                      const isVerifying = verifyingIds.has(s.id);
+                      return (
+                        <TableRow key={s.id}>
+                          <TableCell className={styles.nameCell}>{s.name}</TableCell>
+                          <TableCell>{s.fromEmail}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                status?.connected
+                                  ? "default"
+                                  : isVerifying
+                                  ? "secondary"
+                                  : "destructive"
+                              }
+                            >
+                              {isVerifying
+                                ? "Verificando..."
+                                : status?.connected
+                                ? "Verificado"
+                                : status?.error ?? "Error"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {s.isDefault ? (
+                              <Badge variant="secondary">Sí</Badge>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleSetDefaultSender(s.id)}
+                              >
+                                Marcar predeterminado
+                              </Button>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className={styles.keyActions}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => verifySender(s.id)}
+                                disabled={isVerifying}
+                              >
+                                Verificar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditSender(s)}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteSender(s.id)}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="keys">
+          <Card>
+            <CardHeader>
+              <div className={styles.keysHeader}>
+                <CardTitle>API Keys</CardTitle>
+                <Button onClick={() => setNewKeyDialog(true)}>Nueva API Key</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Loader size="sm" />
+              ) : keys.length === 0 ? (
+                <p className={styles.empty}>
+                  No hay API keys. Crea una para conectar tus sistemas.
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Key</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Último uso</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {keys.map((k) => (
+                      <TableRow key={k.id}>
+                        <TableCell className={styles.nameCell}>{k.name}</TableCell>
+                        <TableCell>
+                          <code className={styles.keyCode}>{k.key}</code>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={k.active ? "default" : "secondary"}
+                          >
+                            {k.active ? "Activa" : "Inactiva"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {k.lastUsedAt
+                            ? new Date(k.lastUsedAt).toLocaleString()
+                            : "Nunca"}
+                        </TableCell>
+                        <TableCell>
+                          <div className={styles.keyActions}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleToggleKey(k.id, !k.active)
+                              }
+                            >
+                              {k.active ? "Desactivar" : "Activar"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteKey(k.id)}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={senderDialogOpen} onOpenChange={setSenderDialogOpen}>
         <DialogContent>

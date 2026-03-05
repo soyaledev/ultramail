@@ -5,5 +5,9 @@ export default function PanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <PanelShell>{children}</PanelShell>;
+  return (
+    <div style={{ height: "100vh", overflow: "hidden" }}>
+      <PanelShell>{children}</PanelShell>
+    </div>
+  );
 }

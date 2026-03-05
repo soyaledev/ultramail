@@ -4,10 +4,8 @@
   gap: 1.25rem;
 }
 
-.settingsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+.tabs {
+  width: 100%;
 }
 
 .title {

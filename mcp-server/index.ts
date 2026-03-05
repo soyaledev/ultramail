@@ -327,9 +327,10 @@ server.tool(
   {},
   async () => {
     const days = 14;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    startDate.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setUTCDate(startDate.getUTCDate() - days + 1);
+    startDate.setUTCHours(0, 0, 0, 0);
 
     const logs = await prisma.emailLog.findMany({
       where: { sentAt: { gte: startDate } },
@@ -338,8 +339,8 @@ server.tool(
 
     const dayMap = new Map<string, { sent: number; failed: number }>();
     for (let i = 0; i < days; i++) {
-      const d = new Date(startDate);
-      d.setDate(d.getDate() + i);
+      const d = new Date(startDate.getTime());
+      d.setUTCDate(startDate.getUTCDate() + i);
       const key = d.toISOString().slice(0, 10);
       dayMap.set(key, { sent: 0, failed: 0 });
     }

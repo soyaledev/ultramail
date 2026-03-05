@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Loader } from "@/components/loader/loader";
 import styles from "./actividad.module.css";
 
 interface AuditEntry {
@@ -127,7 +128,7 @@ export default function ActividadPage() {
       </div>
 
       {loading ? (
-        <div>Cargando...</div>
+        <Loader size="md" />
       ) : !data || data.logs.length === 0 ? (
         <div className={styles.empty}>
           No hay registros de actividad API aún.

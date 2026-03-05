@@ -1,0 +1,185 @@
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.loader.sm {
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+.loader.sm .envelopeSvg {
+  width: 40px;
+  height: 30px;
+}
+
+.loader.sm .bars {
+  height: 16px;
+  gap: 4px;
+}
+
+.loader.sm .barItem {
+  width: 4px;
+  height: 16px;
+}
+
+.loader.sm .text {
+  font-size: 0.6875rem;
+}
+
+.loader.lg {
+  padding: 3rem;
+  gap: 1.5rem;
+}
+
+.loader.lg .envelopeSvg {
+  width: 80px;
+  height: 60px;
+}
+
+.loader.lg .bars {
+  height: 28px;
+  gap: 8px;
+}
+
+.loader.lg .barItem {
+  width: 8px;
+  height: 28px;
+}
+
+.loader.lg .text {
+  font-size: 0.875rem;
+}
+
+.envelope {
+  position: relative;
+}
+
+.envelopeSvg {
+  width: 56px;
+  height: 42px;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.3));
+}
+
+.envelopeBg {
+  stroke: var(--chart-1);
+  stroke-width: 1.5;
+  fill: transparent;
+  opacity: 0.6;
+}
+
+.envelopeFold {
+  stroke: var(--chart-1);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: envelopeDraw 1.2s ease-in-out infinite;
+}
+
+.envelopeDot {
+  fill: var(--chart-1);
+  opacity: 0.9;
+  animation: envelopePulse 0.8s ease-in-out infinite;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+}
+
+.barItem {
+  width: 6px;
+  height: 24px;
+  background: var(--chart-1);
+  border-radius: 0;
+  transform-origin: bottom;
+  animation: barWave 0.8s ease-in-out infinite;
+}
+
+.barItem:nth-child(1) { animation-delay: 0s; }
+.barItem:nth-child(2) { animation-delay: 0.1s; }
+.barItem:nth-child(3) { animation-delay: 0.2s; }
+.barItem:nth-child(4) { animation-delay: 0.3s; }
+.barItem:nth-child(5) { animation-delay: 0.4s; }
+
+.text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  font-family: var(--font-geist-mono), monospace;
+  opacity: 0.9;
+}
+
+.dots {
+  display: flex;
+  gap: 4px;
+}
+
+.dots span {
+  width: 4px;
+  height: 4px;
+  background: var(--chart-1);
+  border-radius: 0;
+  animation: dotPulse 1s ease-in-out infinite;
+}
+
+.dots span:nth-child(1) { animation-delay: 0s; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes envelopeDraw {
+  0%, 100% {
+    stroke-dashoffset: 100;
+    opacity: 0.6;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes envelopePulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes barFade {
+  from { opacity: 0.3; }
+  to { opacity: 0.8; }
+}
+
+@keyframes barWave {
+  0%, 100% {
+    transform: scaleY(0.25);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}

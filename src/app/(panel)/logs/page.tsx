@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Loader } from "@/components/loader/loader";
 import styles from "./logs.module.css";
 
 interface LogEntry {
@@ -102,7 +103,7 @@ export default function LogsPage() {
       </div>
 
       {loading ? (
-        <div>Cargando...</div>
+        <Loader size="md" />
       ) : !data || data.logs.length === 0 ? (
         <div className={styles.empty}>No hay registros de envío.</div>
       ) : (

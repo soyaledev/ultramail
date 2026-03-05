@@ -10,6 +10,8 @@ import {
   Bot,
   LogOut,
   BarChart3,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 import styles from "./sidebar.module.css";
 
@@ -22,7 +24,13 @@ const NAV_ITEMS = [
   { href: "/aia", label: "AIA", icon: Bot },
 ];
 
-export function Sidebar({ collapsed }: { collapsed?: boolean }) {
+export function Sidebar({
+  collapsed,
+  onToggle,
+}: {
+  collapsed?: boolean;
+  onToggle?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -35,6 +43,20 @@ export function Sidebar({ collapsed }: { collapsed?: boolean }) {
     <>
       <div className={`${styles.logo} ${collapsed ? styles.collapsed : ""}`}>
         <h1 className={styles.logoText}>Ultramail</h1>
+        {onToggle && (
+          <button
+            type="button"
+            className={styles.toggleBtn}
+            onClick={onToggle}
+            aria-label={collapsed ? "Expandir menú" : "Ocultar menú"}
+          >
+            {collapsed ? (
+              <PanelLeft size={18} />
+            ) : (
+              <PanelLeftClose size={18} />
+            )}
+          </button>
+        )}
       </div>
 
       <nav className={`${styles.nav} ${collapsed ? styles.collapsed : ""}`}>

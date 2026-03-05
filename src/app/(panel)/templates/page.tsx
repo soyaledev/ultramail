@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Loader } from "@/components/loader/loader";
 import { toast } from "sonner";
 import styles from "./templates.module.css";
 
@@ -97,7 +98,11 @@ export default function TemplatesPage() {
   }
 
   if (loading) {
-    return <div className={styles.page}>Cargando...</div>;
+    return (
+      <div className={styles.page}>
+        <Loader size="lg" />
+      </div>
+    );
   }
 
   return (

@@ -1,6 +1,7 @@
 .desktopApp {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -8,11 +9,11 @@
   flex-direction: column;
   width: 220px;
   min-width: 220px;
-  min-height: 100vh;
+  height: 100vh;
+  flex-shrink: 0;
   background: var(--sidebar);
   border-right: 1px solid var(--border);
   padding: 0;
-  position: relative;
   transition: width 0.2s, min-width 0.2s;
   overflow: hidden;
 }
@@ -22,30 +23,9 @@
   min-width: 52px;
 }
 
-.toggleBtn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.5rem;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted-foreground);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.15s, color 0.15s;
-}
-
-.toggleBtn:hover {
-  background: var(--accent);
-  color: var(--foreground);
-}
-
 .main {
   flex: 1;
+  min-width: 0;
   padding: 1.5rem 2rem;
   overflow-y: auto;
   background: var(--background);

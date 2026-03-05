@@ -11,6 +11,7 @@ import { HtmlPreview } from "@/components/template-editor/html-preview";
 import styles from "@/components/template-editor/template-editor.module.css";
 import { toast } from "sonner";
 import { TestSendDialog } from "@/components/template-editor/test-send-dialog";
+import { Loader } from "@/components/loader/loader";
 
 const VARIABLE_REGEX = /\{\{(\w+)\}\}/g;
 
@@ -86,7 +87,11 @@ export default function EditTemplatePage({ params }: PageProps) {
   }
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return (
+      <div className={styles.wrapper} style={{ placeContent: "center" }}>
+        <Loader size="lg" />
+      </div>
+    );
   }
 
   return (
