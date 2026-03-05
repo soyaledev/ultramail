@@ -321,12 +321,21 @@ El MCP carga .env desde el cwd (DATABASE_URL, DIRECT_URL, ENCRYPTION_KEY). No re
 | ultramail_create_template | Crea plantilla | name, subject, html |
 | ultramail_update_template | Actualiza plantilla | template_id, name?, subject?, html? |
 | ultramail_delete_template | Elimina plantilla | template_id |
-| ultramail_send_email | Envía correo | template_id, to, variables?, sender_id? |
+| ultramail_send_email | Envía correo | template_id, to, variables?, sender_id?, attachments? |
 | ultramail_list_logs | Lista historial | template_id?, status?, limit?, page? |
 | ultramail_list_api_keys | Lista API keys | (ninguno) |
 | ultramail_create_api_key | Crea API key | name |
+| ultramail_update_api_key | Activa/desactiva o renombra API key | api_key_id, active?, name? |
+| ultramail_delete_api_key | Elimina API key | api_key_id |
 | ultramail_list_senders | Lista remitentes SMTP | (ninguno) |
 | ultramail_senders_status | Estado conexión de cada remitente | (ninguno) |
+| ultramail_create_sender | Crea remitente SMTP | name, fromEmail, smtpUser, smtpPassword, smtpHost?, smtpPort?, isDefault? |
+| ultramail_update_sender | Actualiza remitente | sender_id, name?, fromEmail?, smtpHost?, smtpPort?, smtpUser?, smtpPassword?, isDefault? |
+| ultramail_verify_sender | Verifica conexión de un remitente | sender_id |
+| ultramail_delete_sender | Elimina remitente | sender_id |
+| ultramail_health | Estado del sistema (BD, remitentes) | (ninguno) |
+| ultramail_metrics | Métricas: emails/día, tasa éxito, alertas | (ninguno) |
+| ultramail_list_audit | Historial de llamadas a la API | statusCode?, limit?, page? |
 
 ---
 
