@@ -223,6 +223,13 @@ Verifica conexión SMTP del remitente.
 #### GET /api/senders/status
 Estado de conexión de todos los remitentes.
 
+#### GET /api/health (público)
+Estado del sistema: BD conectada, remitentes configurados, remitente predeterminado.
+**Respuesta:** { status: "ok"|"degraded", database, sendersConfigured, defaultSenderExists }
+
+#### GET /api/metrics (requiere sesión)
+Métricas: emails por día (14 días), tasa de éxito, alertas de remitentes.
+
 #### POST /api/test-send
 Envía correo de prueba (requiere sesión).
 **Body:** { "template_id": string, "to": string, "variables"?: object, "sender_id"?: string }
@@ -266,6 +273,7 @@ Envía correo de prueba (requiere sesión).
 | /templates/[id] | Editar plantilla (editor HTML + preview) |
 | /logs | Historial de envíos |
 | /actividad | Actividad API (llamadas externas, éxitos y fallos) |
+| /metricas | Métricas: emails/día, tasa de éxito, alertas remitentes |
 | /settings | API Keys y gestión de remitentes SMTP |
 | /aia | Esta documentación |
 
@@ -311,7 +319,7 @@ Ultramail incluye un servidor MCP que permite a un agente controlar el sistema s
 }
 \`\`\`
 
-El MCP carga .env desde el cwd (DATABASE_URL, DIRECT_URL, ENCRYPTION_KEY). No requiere API key: usa Prisma y los servicios internos directamente.
+El MCP carga .env desde el cwd (DATABASE_URL, DIRECT_URL, ENCRYPTION_KEY). **No requiere API key ni sesión:** usa Prisma y los servicios internos directamente. Un agente puede configurar todo el sistema usando solo el MCP, sin abrir el panel web.
 
 **Herramientas MCP disponibles:**
 | Herramienta | Descripción | Parámetros |
@@ -339,26 +347,43 @@ El MCP carga .env desde el cwd (DATABASE_URL, DIRECT_URL, ENCRYPTION_KEY). No re
 
 ---
 
-## 10. Acciones Comunes para un Agente
+## 10. Configuración inicial (solo con MCP)
 
-| Objetivo | Acción |
-|----------|--------|
-| Enviar correo desde otro sistema | POST /api/send con X-API-Key, template_id, to, variables |
-| Crear plantilla nueva | POST /api/templates (con sesión) o MCP ultramail_create_template |
-| Modificar plantilla | PUT /api/templates/[id] o MCP ultramail_update_template |
-| Ver historial de envíos | GET /api/logs o MCP ultramail_list_logs |
-| Crear API key para integración | POST /api/keys (con sesión) o MCP ultramail_create_api_key |
-| Verificar remitentes / estado SMTP | GET /api/senders/status o MCP ultramail_senders_status |
-| Enviar correo de prueba | POST /api/test-send (con sesión) |
+Un agente puede configurar Ultramail desde cero usando únicamente el MCP. Orden recomendado:
+
+1. **Verificar salud:** \`ultramail_health\` — comprobar que la BD responde.
+2. **Crear primer remitente:** \`ultramail_create_sender\` — name, fromEmail, smtpUser, smtpPassword (para Gmail: contraseña de aplicación), isDefault: true.
+3. **Verificar conexión:** \`ultramail_verify_sender\` con el id del remitente creado.
+4. **Crear API key:** \`ultramail_create_api_key\` — nombre descriptivo. Guardar la key completa.
+5. **Crear plantilla:** \`ultramail_create_template\` — name, subject, html con {{variables}}.
+6. **Listo.** Otros sistemas envían con POST /api/send (X-API-Key + template_id + to + variables).
+
+Todo lo anterior se hace por MCP sin necesidad del panel ni de sesión.
 
 ---
 
-## 11. Consideraciones de Seguridad
+## 11. Acciones Comunes para un Agente
+
+| Objetivo | Acción (MCP) |
+|----------|--------------|
+| Configurar sistema desde cero | ultramail_health → ultramail_create_sender → ultramail_verify_sender → ultramail_create_api_key |
+| Crear plantilla | ultramail_create_template |
+| Enviar correo | ultramail_send_email (o POST /api/send con X-API-Key) |
+| Ver métricas | ultramail_metrics |
+| Verificar estado | ultramail_health, ultramail_senders_status |
+| Crear API key | ultramail_create_api_key |
+| Crear remitente | ultramail_create_sender |
+| Ver historial / auditoría | ultramail_list_logs, ultramail_list_audit |
+
+---
+
+## 12. Consideraciones de Seguridad
 
 - La API Key debe mantenerse secreta. Solo se muestra completa al crearla.
 - PANEL_PASSWORD y SESSION_SECRET deben ser fuertes en producción.
 - Las variables de entorno sensibles no deben commitearse (.env en .gitignore).
-- El middleware protege /templates, /logs, /settings; /aia es público (para que la IA pueda leer la documentación); /api/send usa API Key.
+- El middleware protege /templates, /logs, /settings, /metricas; /aia es público (para que la IA pueda leer la documentación); /api/send usa API Key.
+- El MCP tiene acceso directo a la BD: quien pueda ejecutar el MCP puede crear/eliminar remitentes, API keys y plantillas.
 
 ---
 
