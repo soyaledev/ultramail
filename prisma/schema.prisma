@@ -80,3 +80,32 @@ model ApiAuditLog {
   @@index([statusCode])
   @@index([apiKeyId])
 }
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model LoginAttempt {
+  id          String    @id @default(cuid())
+  ip          String    @unique
+  failedCount Int       @default(0)
+  blockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([ip])
+}
+
+model RateLimit {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  count      Int      @default(0)
+  windowStart DateTime
+  updatedAt  DateTime @updatedAt
+
+  @@index([key])
+}

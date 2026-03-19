@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import styles from "./login.module.css";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -26,9 +30,15 @@ export default function LoginPage() {
         body: JSON.stringify({ password }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Error al iniciar sesión");
+        setError(
+          data.error ||
+            (res.status === 429
+              ? "Demasiados intentos. Espera 15 minutos antes de intentar de nuevo."
+              : "Error al iniciar sesión")
+        );
         return;
       }
 
@@ -44,21 +54,45 @@ export default function LoginPage() {
     <div className={styles.container}>
       <Card className={styles.card}>
         <CardHeader>
-          <CardTitle className={styles.title}>Ultramail</CardTitle>
+          <div className={styles.logoWrap}>
+            <Link href="/" className={styles.logoLink}>
+              <Image
+                src="/Ultramail - logo.svg"
+                alt="Ultramail"
+                width={200}
+                height={65}
+                className={styles.logo}
+              />
+            </Link>
+          </div>
           <p className={styles.subtitle}>Ingresa tu contraseña para acceder</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.field}>
               <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoFocus
-              />
+              <div className={styles.passwordWrap}>
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className={styles.passwordToggle}
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
+              </div>
             </div>
             {error && <p className={styles.error}>{error}</p>}
             <Button type="submit" className={styles.button} disabled={loading}>

@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import styles from "./mobile-gate.module.css";
 
+const RESPONSIVE_PATHS = ["/", "/login"];
+
 export function MobileGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() ?? "";
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -13,7 +17,11 @@ export function MobileGate({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  if (isMobile) {
+  const isResponsivePath = RESPONSIVE_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+
+  if (isMobile && !isResponsivePath) {
     return (
       <div className={styles.mobileMessage}>
         <div className={styles.content}>

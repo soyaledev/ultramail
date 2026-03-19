@@ -9,7 +9,7 @@
 }
 
 .logo.collapsed {
-  justify-content: center;
+  justify-content: space-between;
   padding: 1rem 0.5rem;
 }
 
@@ -42,8 +42,24 @@
   font-family: var(--font-geist-mono), monospace;
 }
 
-.logo.collapsed .logoText {
-  display: none;
+.logoLink {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  width: auto;
+  height: 28px;
+  object-fit: contain;
+  object-position: left;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav {

@@ -19,6 +19,7 @@ const ibmMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Ultramail",
   description: "Microservicio privado de envío de emails",
+  icons: { icon: "/Ultramail - favicon.svg" },
 };
 
 export default function RootLayout({

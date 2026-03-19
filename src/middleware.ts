@@ -5,7 +5,7 @@ interface SessionData {
   isLoggedIn: boolean;
 }
 
-const panelRoutes = ["/templates", "/logs", "/actividad", "/settings", "/metricas"];
+const panelRoutes = ["/templates", "/logs", "/actividad", "/settings", "/metricas", "/newsletter"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -37,5 +37,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/templates/:path*", "/logs/:path*", "/actividad/:path*", "/settings/:path*", "/metricas/:path*"],
+  matcher: ["/templates/:path*", "/logs/:path*", "/actividad/:path*", "/settings/:path*", "/metricas/:path*", "/newsletter/:path*"],
 };

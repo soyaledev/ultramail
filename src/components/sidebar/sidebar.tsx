@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutTemplate,
@@ -12,6 +13,7 @@ import {
   BarChart3,
   PanelLeftClose,
   PanelLeft,
+  Mail,
 } from "lucide-react";
 import styles from "./sidebar.module.css";
 
@@ -20,6 +22,7 @@ const NAV_ITEMS = [
   { href: "/logs", label: "Historial", icon: History },
   { href: "/actividad", label: "Actividad API", icon: Activity },
   { href: "/metricas", label: "Métricas", icon: BarChart3 },
+  { href: "/newsletter", label: "Newsletter", icon: Mail },
   { href: "/settings", label: "Configuración", icon: Settings },
   { href: "/aia", label: "AIA", icon: Bot },
 ];
@@ -42,7 +45,26 @@ export function Sidebar({
   return (
     <>
       <div className={`${styles.logo} ${collapsed ? styles.collapsed : ""}`}>
-        <h1 className={styles.logoText}>Ultramail</h1>
+        {collapsed ? (
+          <Link href="/" className={styles.logoIcon}>
+            <Image
+              src="/Ultramail - favicon.svg"
+              alt="Ultramail"
+              width={28}
+              height={28}
+            />
+          </Link>
+        ) : (
+          <Link href="/" className={styles.logoLink}>
+            <Image
+              src="/Ultramail - logo.svg"
+              alt="Ultramail"
+              width={140}
+              height={46}
+              className={styles.logoImg}
+            />
+          </Link>
+        )}
         {onToggle && (
           <button
             type="button"
