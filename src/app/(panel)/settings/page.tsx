@@ -519,18 +519,18 @@ export default function SettingsPage() {
           </p>
           <div className={styles.senderForm}>
             <div>
-              <Label htmlFor="sender-name">Nombre</Label>
+              <Label htmlFor="sender-name">Nombre visible (remitente)</Label>
               <Input
                 id="sender-name"
                 value={senderForm.name}
                 onChange={(e) =>
                   setSenderForm((f) => ({ ...f, name: e.target.value }))
                 }
-                placeholder="Ej: Mi correo personal"
+                placeholder="Ej: Ultramail, Mi tienda…"
               />
             </div>
             <div>
-              <Label htmlFor="sender-email">Email (From)</Label>
+              <Label htmlFor="sender-email">Dirección de correo (From)</Label>
               <Input
                 id="sender-email"
                 type="email"

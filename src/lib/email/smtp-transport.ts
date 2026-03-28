@@ -105,8 +105,11 @@ async function doSendMail(
     },
   });
 
+  const displayName = sender.name.trim();
   const mailOptions: nodemailer.SendMailOptions = {
-    from: sender.fromEmail,
+    from: displayName
+      ? { name: displayName, address: sender.fromEmail }
+      : sender.fromEmail,
     to: options.to,
     subject: options.subject,
     html: options.html,
